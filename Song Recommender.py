@@ -28,54 +28,49 @@ warnings.filterwarnings("ignore")
 # In[2]:
 
 
-data = pd.read_csv("/Users/sammannheimer/Documents/CMU_MSBA/Machine Learning II/Data Project/data.csv")
-genre_data = pd.read_csv('/Users/sammannheimer/Documents/CMU_MSBA/Machine Learning II/Data Project/data_by_genres.csv')
-year_data = pd.read_csv('/Users/sammannheimer/Documents/CMU_MSBA/Machine Learning II/Data Project/data_by_year.csv')
+data = pd.read_csv("../Downloads/data.csv")
+genre_data = pd.read_csv('../Downloads/data_by_genres.csv')
+year_data = pd.read_csv('../Downloads/data_by_year.csv')
 
 
 # In[3]:
 
 
 print(data.info())
+print(genre_data.info())
+print(year_data.info())
 
 
 # In[4]:
 
 
-print(genre_data.info())
+from yellowbrick.target import FeatureCorrelation
+
+feature_names = ['acousticness', 'danceability', 'energy', 'instrumentalness',
+       'liveness', 'loudness', 'speechiness', 'tempo', 'valence','duration_ms','explicit','key','mode','year']
+
+X, y = data[feature_names], data['popularity']
+
+# Create a list of the feature names
+features = np.array(feature_names)
+
+# Instantiate the visualizer
+visualizer = FeatureCorrelation(labels=features)
+
+plt.rcParams['figure.figsize']=(20,20)
+visualizer.fit(X, y)     # Fit the data to the visualizer
+visualizer.show()
 
 
 # In[5]:
 
 
-print(year_data.info())
+sound_features = ['acousticness', 'danceability', 'energy', 'instrumentalness', 'liveness', 'valence']
+fig = px.line(year_data, x='year', y=sound_features)
+fig.show()
 
 
 # In[6]:
-
-
-#pip install -U scikit-learn
-
-
-# In[18]:
-
-
-##SCM Added
-import scikitplot as skplt
-from sklearn.cluster import KMeans # Main analysis package
-
-df = genre_data.select_dtypes(np.number)
-
-clustering_kmeans = KMeans(n_clusters=8, n_init=5, random_state=886)
-clustering_kmeans.fit(df)
-clustering_kmeans.predict(df)
-
-
-skplt.cluster.plot_elbow_curve(clustering_kmeans, df, cluster_ranges=range(1, 10))
-plt.show()
-
-
-# In[19]:
 
 
 from sklearn.cluster import KMeans
@@ -83,33 +78,17 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
 
 
-#was originally 10 clusters
-cluster_pipeline = Pipeline([('scaler', StandardScaler()), ('kmeans', KMeans(n_clusters=3))])
+# In[7]:
+
+
+cluster_pipeline = Pipeline([('scaler', StandardScaler()), ('kmeans', KMeans(n_clusters=10))])
 X = genre_data.select_dtypes(np.number)
 cluster_pipeline.fit(X)
 genre_data['cluster'] = cluster_pipeline.predict(X)
 
 
-# In[20]:
+# In[8]:
 
-
-genre_data.head()
-
-
-# In[21]:
-
-
-# Assuming 'cluster' is the column indicating clusters, and other columns are the data features
-cluster_means = genre_data.groupby('cluster').mean()
-
-# Print the average for each feature by cluster
-print(cluster_means)
-
-
-# In[22]:
-
-
-# Visualizing the Clusters with t-SNE
 
 from sklearn.manifold import TSNE
 
@@ -124,29 +103,30 @@ fig = px.scatter(
 fig.show()
 
 
-# In[29]:
+# In[9]:
 
 
-##SCM Added
-import scikitplot as skplt
-from sklearn.cluster import KMeans # Main analysis package
-
-df = song_embedding
-
-clustering_kmeans = KMeans(n_clusters=8, n_init=5, random_state=886)
+df = genre_data.select_dtypes(np.number)
+clustering_kmeans = KMeans(n_clusters=10, n_init=5, random_state=886)
 clustering_kmeans.fit(df)
 clustering_kmeans.predict(df)
 
 
-skplt.cluster.plot_elbow_curve(clustering_kmeans, df, cluster_ranges=range(1, 10))
+# In[10]:
+
+
+import scikitplot as skplt
+from sklearn.cluster import KMeans # Main analysis package
+
+skplt.cluster.plot_elbow_curve(clustering_kmeans,df , cluster_ranges=range(1, 10))
 plt.show()
 
 
-# In[30]:
+# In[12]:
 
 
 song_cluster_pipeline = Pipeline([('scaler', StandardScaler()), 
-                                  ('kmeans', KMeans(n_clusters=6, 
+                                  ('kmeans', KMeans(n_clusters=20, 
                                    verbose=False))
                                  ], verbose=False)
 
@@ -157,10 +137,14 @@ song_cluster_labels = song_cluster_pipeline.predict(X)
 data['cluster_label'] = song_cluster_labels
 
 
-# In[31]:
+# In[13]:
 
 
-# Visualizing the Clusters with PCA
+data.head()
+
+
+# In[14]:
+
 
 from sklearn.decomposition import PCA
 
@@ -175,35 +159,28 @@ fig = px.scatter(
 fig.show()
 
 
-# In[13]:
-
-
-get_ipython().system('pip install spotipy')
-
-
-# In[14]:
-
-
-import os
-
-client_id = os.environ.get("4ae38db3abaf490b849dfd04b2a28d64")
-client_secret = os.environ.get("1acb2afc77814b2dbd95ce43813dc7c7")
-
-print("Client ID:", client_id)
-print("Client Secret:", client_secret)
-
-
 # In[15]:
+
+
+pip install spotipy
+
+
+# In[16]:
 
 
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 from collections import defaultdict
+
+
+# In[17]:
+
+
 import os  # Don't forget to import the 'os' module
 
-# Replace with your actual environment variable names
-client_id = os.environ["4ae38db3abaf490b849dfd04b2a28d64"]
-client_secret = os.environ["1acb2afc77814b2dbd95ce43813dc7c7"]
+# Replace with your actual environment variable names"
+client_id = "cce96d5f52824c76902aad13c208663f"
+client_secret = "8bece16b173d41e092a2e2f16ee96df1"
 
 sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials(client_id=client_id, client_secret=client_secret))
 
@@ -231,7 +208,7 @@ def find_song(name, year):
     return pd.DataFrame(song_data)
 
 
-# In[ ]:
+# In[18]:
 
 
 from collections import defaultdict
@@ -283,7 +260,7 @@ def flatten_dict_list(dict_list):
     return flattened_dict
 
 
-def recommend_songs( song_list, spotify_data, n_songs=10):
+def recommend_songs( song_list, spotify_data, n_songs=4):
     
     metadata_cols = ['name', 'year', 'artists']
     song_dict = flatten_dict_list(song_list)
@@ -300,7 +277,7 @@ def recommend_songs( song_list, spotify_data, n_songs=10):
     return rec_songs[metadata_cols].to_dict(orient='records')
 
 
-# In[ ]:
+# In[19]:
 
 
 recommend_songs([{'name': 'Come As You Are', 'year':1991},
@@ -308,4 +285,16 @@ recommend_songs([{'name': 'Come As You Are', 'year':1991},
                 {'name': 'Lithium', 'year': 1992},
                 {'name': 'All Apologies', 'year': 1993},
                 {'name': 'Stay Away', 'year': 1993}],  data)
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
 
