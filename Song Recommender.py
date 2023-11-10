@@ -28,9 +28,9 @@ warnings.filterwarnings("ignore")
 # In[2]:
 
 
-data = pd.read_csv("/Users/sammannheimer/Documents/CMU_MSBA/Machine Learning II/Data Project/data.csv")
-genre_data = pd.read_csv('/Users/sammannheimer/Documents/CMU_MSBA/Machine Learning II/Data Project/data_by_genres.csv')
-year_data = pd.read_csv('/Users/sammannheimer/Documents/CMU_MSBA/Machine Learning II/Data Project/data_by_year.csv')
+data = pd.read_csv("https://raw.githubusercontent.com/modi160497/music-recommender/main/data_trunc.csv")
+genre_data = pd.read_csv('https://raw.githubusercontent.com/modi160497/music-recommender/main/data_by_genres.csv')
+year_data = pd.read_csv('https://raw.githubusercontent.com/modi160497/music-recommender/main/data_by_year.csv')
 
 
 # In[3]:
